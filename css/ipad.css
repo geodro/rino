@@ -15,7 +15,8 @@ html, body, #container {
 	display: block;
 	width: ;
 	height: 100%;
-	background: url('../img/bkg.jpg') top center repeat-x #000;
+/*	background: url('../img/bkg.jpg') top center repeat-x #000;*/
+	background: #000;
 	background-size: 3889px 748px;
 	border-left: 1px solid #333;
 	color: yellow;
@@ -24,6 +25,7 @@ html, body, #container {
 	text-align: center;
 	
 	font-size: 40px;
+	
 }
 
 .main .left {
