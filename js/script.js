@@ -79,12 +79,16 @@ var panorama = new function() {
 	//$this.width = 3889;
 	//$this.height = 748;
 	
-	$this.width = 13434;
-	$this.height = 2609;
+	$this.width = 9268;
+	$this.height = 1800;
+	$this.tile = 1853;
+	$this.tileNr = 5;
 	
 	$this.currentWidth = 0;
 	$this.currentHeight = 0;
 	$this.currentHeightPadding = 0;
+	
+	$this.pixelRatio = 1;
 	
 	$this.canvas = undefined;
 	
@@ -97,6 +101,9 @@ var panorama = new function() {
 	$this.circles = new Array();
 	
 	$this.run = function (selector, processing) {
+	
+		if (window.devicePixelRatio !== undefined)
+			$this.pixelRatio = 1;
 
 		$this.selector = selector;
 		
@@ -110,6 +117,11 @@ var panorama = new function() {
 		$this.update();
 		
 		$this.sketch.imageCache.add('img/bkg.jpg');
+		$this.sketch.imageCache.add('img/bkg_0.jpg');
+		$this.sketch.imageCache.add('img/bkg_1.jpg');
+		$this.sketch.imageCache.add('img/bkg_2.jpg');
+		$this.sketch.imageCache.add('img/bkg_3.jpg');
+		$this.sketch.imageCache.add('img/bkg_4.jpg');
 		
 		for ($i = 0; $i < 3; $i++) {
 		
@@ -127,12 +139,12 @@ var panorama = new function() {
 	
 		$this.currentHeightPadding = Math.round($this.selector.height() / 5);
 	
-		$this.currentHeight = $this.selector.height() + $this.currentHeightPadding;
+		$this.currentHeight = ($this.selector.height() + $this.currentHeightPadding) * $this.pixelRatio;
 		
 		$this.currentWidth = Math.round($this.currentHeight * $this.width / $this.height);
 		
 		if ($this.p != undefined)
-			$this.p.size($this.selector.parent().width(), $this.selector.parent().height());
+			$this.p.size($this.selector.parent().width() * $this.pixelRatio, $this.selector.parent().height() * $this.pixelRatio);
 		
 	}
 	
@@ -148,7 +160,7 @@ var panorama = new function() {
 		
 		$this.b = 0 - b;
 		
-		//$('.nfo').html(a + ' - ' + b);
+		$('.nfo').html($this.currentHeight);
 	
 	}
 	
@@ -163,7 +175,13 @@ var panorama = new function() {
 	$this.sketch.attachFunction = function(processing) {
 	
 		processing.setup = function() {
-			processing.size($this.selector.parent().width(), $this.selector.parent().height());
+			processing.size($this.selector.parent().width() * $this.pixelRatio, $this.selector.parent().height() * $this.pixelRatio);
+			imgs = new Array();
+			for (var i = 0; i < $this.tileNr; i++) {
+			
+				imgs[i] = processing.loadImage("img/bkg_" + i + ".jpg");
+			
+			}
 			img = processing.loadImage("img/bkg.jpg");
 		};
 		
@@ -174,11 +192,20 @@ var panorama = new function() {
 		    // erase background
 		    processing.background(255);
 		    
-		    processing.image(img, $this.a, $this.b, $this.currentWidth, $this.currentHeight);
+		    if ($this.pixelRatio > 1)
+		    	processing.scale(1/$this.pixelRatio, 1/$this.pixelRatio);
+		    	
+			for (var i = 0; i < $this.tileNr; i++) {
+			
+				processing.image(imgs[i], $this.a + i * Math.round($this.currentWidth / $this.tileNr), $this.b, Math.round($this.currentWidth / $this.tileNr), $this.currentHeight);
+			
+			}
 		    
-		    processing.image(img, $this.a - $this.currentWidth, $this.b, $this.currentWidth, $this.currentHeight);
+		    //processing.image(img, $this.a, $this.b, $this.currentWidth, $this.currentHeight);
 		    
-		    processing.image(img, $this.a + $this.currentWidth, $this.b, $this.currentWidth, $this.currentHeight);
+		    processing.image(imgs[$this.tileNr - 1], $this.a - Math.round($this.currentWidth / $this.tileNr), $this.b, Math.round($this.currentWidth / $this.tileNr), $this.currentHeight);
+		    
+		    processing.image(imgs[0], $this.a + Math.round($this.currentWidth / $this.tileNr) * $this.tileNr, $this.b, Math.round($this.currentWidth / $this.tileNr), $this.currentHeight);
 		    
 		    for ($i = 0; $i < 3; $i++) {
 			    $this.circles[$i].run(processing, $this.a, $this.b);
