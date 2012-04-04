@@ -34,7 +34,7 @@ function GCircle(parent, x, y, radius) {
 	if ($this.radius == undefined)
 		$this.radius = 50.0;
 	
-	$this.run = function (processing, a) {
+	$this.run = function (processing, a, b) {
 	
 		if ($this.display == true) {
 	
@@ -47,7 +47,7 @@ function GCircle(parent, x, y, radius) {
 		
 		
 		
-			if (processing.mouseX > a + this.x - $this.radius/2 && processing.mouseX < a + this.x + $this.radius/2 && processing.mouseY > $this.y - $this.radius / 2 && processing.mouseY < $this.y + $this.radius / 2) {
+			if (processing.mouseX > a + this.x - $this.radius/2 && processing.mouseX < a + this.x + $this.radius/2 && processing.mouseY > $this.y + b - $this.radius / 2 && processing.mouseY < $this.y + b + $this.radius / 2) {
 			
 				$this.over = true;
 			      
@@ -57,7 +57,7 @@ function GCircle(parent, x, y, radius) {
 				
 			}
 			
-			processing.ellipse(a + $this.x, $this.y, $this.radius, $this.radius );
+			processing.ellipse(a + $this.x, b + $this.y, $this.radius, $this.radius );
 		
 		}
 		
@@ -73,6 +73,7 @@ var panorama = new function() {
 	var $this = this;				
 	
 	$this.a = 0;
+	$this.b = 0;
 	
 	$this.selector = undefined;
 	//$this.width = 3889;
@@ -83,6 +84,7 @@ var panorama = new function() {
 	
 	$this.currentWidth = 0;
 	$this.currentHeight = 0;
+	$this.currentHeightPadding = 0;
 	
 	$this.canvas = undefined;
 	
@@ -123,30 +125,30 @@ var panorama = new function() {
 	
 	$this.update = function () {
 	
-		$this.currentHeight = $this.selector.height(); 
+		$this.currentHeightPadding = Math.round($this.selector.height() / 5);
+	
+		$this.currentHeight = $this.selector.height() + $this.currentHeightPadding;
 		
 		$this.currentWidth = Math.round($this.currentHeight * $this.width / $this.height);
 		
 		if ($this.p != undefined)
-			$this.p.size($this.selector.parent().width(), $this.currentHeight);
+			$this.p.size($this.selector.parent().width(), $this.selector.parent().height());
 		
 	}
 	
-	$this.rotate = function (a) {
+	$this.rotate = function (a, b) {
 	
 		a = Math.round(a*100/1)/100
 	
 		var diff = (0 + ($this.currentWidth*a)/360) - $this.currentWidth / 2 + $this.selector.parent().width() / 2;
 		
-		//$this.selector.stop().animate({marginLeft: 0 - diff}, 500, 'linear');
-		
 		diff = Math.round(diff*10)/10;
 		
 		$this.a = diff;
 		
-		//$this.selector.css('marginLeft', 0 - diff);
+		$this.b = 0 - b;
 		
-		$('.nfo').html(a);
+		//$('.nfo').html(a + ' - ' + b);
 	
 	}
 	
@@ -161,7 +163,7 @@ var panorama = new function() {
 	$this.sketch.attachFunction = function(processing) {
 	
 		processing.setup = function() {
-			processing.size($this.selector.parent().width(), $this.currentHeight);
+			processing.size($this.selector.parent().width(), $this.selector.parent().height());
 			img = processing.loadImage("img/bkg.jpg");
 		};
 		
@@ -172,14 +174,14 @@ var panorama = new function() {
 		    // erase background
 		    processing.background(255);
 		    
-		    processing.image(img, $this.a, 0, $this.currentWidth, $this.currentHeight);
+		    processing.image(img, $this.a, $this.b, $this.currentWidth, $this.currentHeight);
 		    
-		    processing.image(img, $this.a - $this.currentWidth, 0, $this.currentWidth, $this.currentHeight);
+		    processing.image(img, $this.a - $this.currentWidth, $this.b, $this.currentWidth, $this.currentHeight);
 		    
-		    processing.image(img, $this.a + $this.currentWidth, 0, $this.currentWidth, $this.currentHeight);
+		    processing.image(img, $this.a + $this.currentWidth, $this.b, $this.currentWidth, $this.currentHeight);
 		    
 		    for ($i = 0; $i < 3; $i++) {
-			    $this.circles[$i].run(processing, $this.a);
+			    $this.circles[$i].run(processing, $this.a, $this.b);
 		    }
 		
 		    
@@ -188,22 +190,26 @@ var panorama = new function() {
 		processing.mouseMoved = function() {
 		
 			b = processing.mouseX;
+			c = processing.mouseY;
 			
 			if (processing.mouseX >= panorama.selector.parent().width() / 2) {
 			
-				b = b - panorama.selector.parent().width() / 2;
+				b = b - $this.selector.parent().width() / 2;
 				
-				a = 0 - b * 360 / panorama.selector.parent().width();
+				b = 0 - b * 360 / $this.selector.parent().width();
 				
 			} else {
 			
-				a = 180 - b * 360 / panorama.selector.parent().width();
+				b = 180 - b * 360 / $this.selector.parent().width();
 			
 			}
 			
-			a = Math.round(a*100/1)/100;
+			c = c * $this.currentHeightPadding / $this.selector.parent().height();
+			
+			b = Math.round(b*100/1)/100;
+			c = Math.round(c*100/1)/100;
 					
-			panorama.rotate(a);
+			panorama.rotate(b, c);
 		 
 		}
 		
@@ -237,21 +243,25 @@ $(document).ready(function(){
 	window.ondeviceorientation = function(event) {
 		
 		//if (panorama.selector.parent().width() > panorama.currentHeight)
-			a = Math.round(event.alpha*10/1)/10;
+		a = Math.round(event.alpha*10/1)/10;
+		b = Math.round(event.gamma*10/1)/10;
 		//else {
 		//	a = Math.round(event.beta*10/1)/10;
 		//}
 		
-		if (a > 180) {
+		if (a == undefined) a = 0;
 		
-			a = 0 - (360 - a);
+		if (a > 180) a = 0 - (360 - a);
 		
-		}
+		if (b == undefined) b = 0;
 		
-		if (a == undefined)
-			a = 0;
+		b = b + 50;
+			
+		if (b > 20) b = 20; else if (b < -20) b = -20;
 		
-		panorama.rotate(a);
+		b = Math.round((b + 20) * panorama.currentHeightPadding / 40);
+		
+		panorama.rotate(a, b);
 		
 	}
 
