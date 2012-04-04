@@ -4,22 +4,6 @@
 
 var a = 0;
 
-/*
-window.ondevicemotion = function(event) {
-   var x = Math.round(event.accelerationIncludingGravity.x*1/1);
-   var y = Math.round(event.accelerationIncludingGravity.y*1/1);
-   var z = Math.round(event.accelerationIncludingGravity.z*1/1);
-   
-   if(x >= 0) { x = '+' + x}
-   if(y >= 0) { y = '+' + y}
-   if(z >= 0) { z = '+' + z}
-   
-   x_dom.text(x);
-   y_dom.text(y);
-   z_dom.text(z);
-}
-*/
-
 function GCircle(parent, x, y, radius) {
 
 	var $this = this;
@@ -68,7 +52,7 @@ function GCircle(parent, x, y, radius) {
 
 }
 
-var panorama = new function() {
+var panorama = new function () {
 
 	var $this = this;				
 	
@@ -83,6 +67,8 @@ var panorama = new function() {
 	$this.height = 1800;
 	$this.tile = 1853;
 	$this.tileNr = 5;
+	$this.w = Math.round($this.width / $this.tileNr);
+	$this.wf = Math.round($this.width / $this.tileNr - 1);
 	
 	$this.currentWidth = 0;
 	$this.currentHeight = 0;
@@ -90,15 +76,19 @@ var panorama = new function() {
 	
 	$this.pixelRatio = 1;
 	
-	$this.canvas = undefined;
+	//$this.canvas = undefined;
+	$this.stage = undefined;
 	
-	$this.p = undefined;
+	$this.loader = undefined;
 	
-	$this.radius = 50.0;
+	$this.background = undefined;
+	$this.bkgs = new Array();
 	
-	$this.sketch = new Processing.Sketch();
+	//$this.p = undefined;
 	
-	$this.circles = new Array();
+	//$this.radius = 50.0;
+	
+	//$this.circles = new Array();
 	
 	$this.run = function (selector, processing) {
 	
@@ -107,7 +97,7 @@ var panorama = new function() {
 
 		$this.selector = selector;
 		
-		$this.canvas = document.getElementById("canvas1");
+		//$this.canvas = document.getElementById("canvas1");
 	
 		if ($this.selector == undefined) {
 			alert('selector undefined');
@@ -116,22 +106,143 @@ var panorama = new function() {
 		
 		$this.update();
 		
-		$this.sketch.imageCache.add('img/bkg.jpg');
-		$this.sketch.imageCache.add('img/bkg_0.jpg');
-		$this.sketch.imageCache.add('img/bkg_1.jpg');
-		$this.sketch.imageCache.add('img/bkg_2.jpg');
-		$this.sketch.imageCache.add('img/bkg_3.jpg');
-		$this.sketch.imageCache.add('img/bkg_4.jpg');
-		
-		for ($i = 0; $i < 3; $i++) {
+		/*for ($i = 0; $i < 3; $i++) {
 		
 			xRand = Math.round(Math.random()*10);
 			yRand = Math.round(Math.random()*5);
 			$this.circles[$i] = new GCircle($this, $i*100*xRand*2, 100*yRand);
 		
+		}*/
+		
+		$this.loader = new PxLoader();
+		
+		for (var i = 0; i < $this.tileNr; i++) {
+		
+			$this.bkgs[i] = $this.loader.addImage("img/bkg_" + i + ".jpg");
+		
 		}
 		
-		$this.p = new Processing($this.canvas, $this.sketch);
+		$this.loader.addCompletionListener(function(){
+		
+			$this.render(true);
+		
+		});
+		
+		$this.loader.start();
+	
+	}
+	
+	$this.render = function (execute) {
+	
+		if (execute == true) {
+	
+			$this.stage = new Kinetic.Stage({
+				container: 'main',
+				width: $this.selector.width(),
+				height: $this.selector.height(),
+			});
+			
+			$this.stage.onContent("mousemove", function() {
+                var mousePos = $this.stage.getMousePosition();
+                
+                b = mousePos.x;
+    			c = mousePos.y;
+    			
+    			console.log('x: ' + b + ', y: ' + c);
+    			
+    			if (b >= panorama.selector.parent().width() / 2) {
+    			
+    				b = b - $this.selector.parent().width() / 2;
+    				
+    				b = 0 - b * 360 / $this.selector.parent().width();
+    				
+    			} else {
+    			
+    				b = 180 - b * 360 / $this.selector.parent().width();
+    			
+    			}
+    			
+    			c = c * $this.currentHeightPadding / $this.selector.parent().height();
+    			
+    			b = Math.round(b*100/1)/100;
+    			c = Math.round(c*100/1)/100;
+    					
+    			panorama.rotate(b, c);
+            })
+			
+			$this.background = new Kinetic.Layer();
+			
+			for (var i = 0; i < $this.tileNr; i++) {
+						
+				//processing.image(imgs[i], $this.a + i * Math.round($this.currentWidth / $this.tileNr), $this.b, Math.round($this.currentWidth / $this.tileNr), $this.currentHeight);
+			
+		        var img = new Kinetic.Image({
+		            x: $this.a + i * $this.w,
+		            y: $this.b,
+		            image: $this.bkgs[i],
+		            width: $this.w,
+		            height: $this.currentHeight
+		        });
+		
+		        // add the shape to the layer
+		        $this.background.add(img);
+	        }
+	        
+	        var img = new Kinetic.Image({
+	            x: $this.a - $this.w,
+	            y: $this.b,
+	            image: $this.bkgs[$this.tileNr - 1],
+	            width: $this.w,
+	            height: $this.currentHeight
+	        });
+	        
+	        $this.background.add(img);
+	        
+			var img = new Kinetic.Image({
+			    x: $this.a + $this.tileNr * $this.w,
+			    y: $this.b,
+			    image: $this.bkgs[0],
+			    width: $this.w,
+			    height: $this.currentHeight
+			});
+			
+			$this.background.add(img);
+	        
+	        $this.stage.add($this.background);
+			
+			$this.stage.onFrame(function(frame) {
+				$this.animateBackground($this.background, frame);
+			});
+			
+			$this.stage.start();
+		}
+		
+		$('#main').find('canvas').css('left', 0);
+	}
+	
+	$this.animateBackground = function (layer, frame) {
+	
+		var stage = layer.getStage();
+		
+        // update
+        var shapes = layer.getChildren();
+        
+
+        for(var i = 0; i < shapes.length - 2; i++) {
+            var shape = shapes[i];
+            
+            shape.setPosition($this.a + i * $this.wf, $this.b);
+            shape.setSize($this.w, $this.currentHeight);
+            
+        }
+
+		shapes[shapes.length - 2].setPosition($this.a - $this.w, $this.b);
+		shapes[shapes.length - 2].setSize($this.w, $this.currentHeight);
+		shapes[shapes.length - 1].setPosition($this.a + $this.tileNr * $this.w - $this.tileNr + 1, $this.b);
+		shapes[shapes.length - 1].setSize($this.w, $this.currentHeight);
+
+        // draw
+        layer.draw();
 	
 	}
 	
@@ -143,9 +254,13 @@ var panorama = new function() {
 		
 		$this.currentWidth = Math.round($this.currentHeight * $this.width / $this.height);
 		
-		if ($this.p != undefined)
-			$this.p.size($this.selector.parent().width() * $this.pixelRatio, $this.selector.parent().height() * $this.pixelRatio);
+		$this.w = Math.round($this.currentWidth / $this.tileNr);
+		$this.wf = Math.round($this.currentWidth / $this.tileNr - 1);
 		
+		if ($this.stage != undefined)
+			$this.stage.setSize($this.selector.parent().width() * $this.pixelRatio, $this.selector.parent().height() * $this.pixelRatio);
+		
+		$('.kineticjs-content').width($this.selector.parent().width() * $this.pixelRatio).height($this.selector.parent().height() * $this.pixelRatio);
 	}
 	
 	$this.rotate = function (a, b) {
@@ -160,7 +275,7 @@ var panorama = new function() {
 		
 		$this.b = 0 - b;
 		
-		$('.nfo').html($this.currentHeight);
+		$('.nfo').html(Math.round($this.currentWidth / $this.tileNr));
 	
 	}
 	
@@ -172,85 +287,6 @@ var panorama = new function() {
 	
 	}
 	
-	$this.sketch.attachFunction = function(processing) {
-	
-		processing.setup = function() {
-			processing.size($this.selector.parent().width() * $this.pixelRatio, $this.selector.parent().height() * $this.pixelRatio);
-			imgs = new Array();
-			for (var i = 0; i < $this.tileNr; i++) {
-			
-				imgs[i] = processing.loadImage("img/bkg_" + i + ".jpg");
-			
-			}
-			img = processing.loadImage("img/bkg.jpg");
-		};
-		
-		processing.draw = function() {
-		    
-		    var centerX = processing.width / 2, centerY = processing.height / 2;
-		    
-		    // erase background
-		    processing.background(255);
-		    
-		    if ($this.pixelRatio > 1)
-		    	processing.scale(1/$this.pixelRatio, 1/$this.pixelRatio);
-		    	
-			for (var i = 0; i < $this.tileNr; i++) {
-			
-				processing.image(imgs[i], $this.a + i * Math.round($this.currentWidth / $this.tileNr), $this.b, Math.round($this.currentWidth / $this.tileNr), $this.currentHeight);
-			
-			}
-		    
-		    //processing.image(img, $this.a, $this.b, $this.currentWidth, $this.currentHeight);
-		    
-		    processing.image(imgs[$this.tileNr - 1], $this.a - Math.round($this.currentWidth / $this.tileNr), $this.b, Math.round($this.currentWidth / $this.tileNr), $this.currentHeight);
-		    
-		    processing.image(imgs[0], $this.a + Math.round($this.currentWidth / $this.tileNr) * $this.tileNr, $this.b, Math.round($this.currentWidth / $this.tileNr), $this.currentHeight);
-		    
-		    for ($i = 0; $i < 3; $i++) {
-			    $this.circles[$i].run(processing, $this.a, $this.b);
-		    }
-		
-		    
-		 };
-		  
-		processing.mouseMoved = function() {
-		
-			b = processing.mouseX;
-			c = processing.mouseY;
-			
-			if (processing.mouseX >= panorama.selector.parent().width() / 2) {
-			
-				b = b - $this.selector.parent().width() / 2;
-				
-				b = 0 - b * 360 / $this.selector.parent().width();
-				
-			} else {
-			
-				b = 180 - b * 360 / $this.selector.parent().width();
-			
-			}
-			
-			c = c * $this.currentHeightPadding / $this.selector.parent().height();
-			
-			b = Math.round(b*100/1)/100;
-			c = Math.round(c*100/1)/100;
-					
-			panorama.rotate(b, c);
-		 
-		}
-		
-		processing.mousePressed = function() {
-		
-			for ($i = 0; $i < 3; $i++) {
-				if ($this.circles[$i].over == true)
-				    $this.circles[$i].display = false;
-			}
-		
-		}
-		
-	
-	}
 
 	return $this;
 }
@@ -258,6 +294,8 @@ var panorama = new function() {
 $(document).ready(function(){
 
 	setTimeout(function() { window.scrollTo(0, 1) }, 100);
+
+	//panorama.run();
 
 	panorama.run($('.main'));
 	
@@ -271,7 +309,7 @@ $(document).ready(function(){
 		
 		//if (panorama.selector.parent().width() > panorama.currentHeight)
 		a = Math.round(event.alpha*10/1)/10;
-		b = Math.round(event.gamma*10/1)/10;
+		b = Math.round(event.beta*10/1)/10;
 		//else {
 		//	a = Math.round(event.beta*10/1)/10;
 		//}
