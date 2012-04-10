@@ -48,7 +48,7 @@ html, body, #container {
 .nfo {
 	position: absolute;
 	top: 0px;
-	left: 0px;
+	right: 0px;
 	color: yellow;
 	
 	line-height: 100%;
@@ -56,4 +56,8 @@ html, body, #container {
 	
 	font-size: 40px;
 	z-index: 1;
+}
+
+canvas {
+	left:  0px;
 }
