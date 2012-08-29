@@ -282,8 +282,8 @@
 		
 		$this.stage.onFrame(function(frame) {
 			
-			if ($this.menu.close === false && $this.menu.animateHide === false && $this.menu.animateShow === false)
-				animateGiantNut($this.menuLayer, frame);
+			/*if ($this.menu.close === false && $this.menu.animateHide === false && $this.menu.animateShow === false)
+				animateGiantNut($this.menuLayer, frame);*/
 			
 			if ($this.rino.close === false)
 				animateRino($this.rinoLayer, frame);
@@ -532,7 +532,7 @@ function animateRino (layer, f) {
 			name: 'spider1',
 			x: 300,
 			y: 500,
-			centerOffset: {
+			offset: {
 				x: 123/2,
 				y: 960
 			},
@@ -549,7 +549,7 @@ function animateRino (layer, f) {
 			name: 'spider2',
 			x: 200,
 			y: 250,
-			centerOffset: {
+			offset: {
 				x: 109/2,
 				y: 960
 			},
@@ -566,7 +566,7 @@ function animateRino (layer, f) {
 			name: 'spider3',
 			x: 10,
 			y: 300,
-			centerOffset: {
+			offset: {
 				x: 94/2,
 				y: 961
 			},
@@ -599,7 +599,7 @@ function animateRino (layer, f) {
 			name: 'spear1',
 			x: 60,
 			y: 140,
-			centerOffset: {
+			offset: {
 				x: 55/2,
 				y: 0
 			},
@@ -616,7 +616,7 @@ function animateRino (layer, f) {
 			name: 'spear1',
 			x: 180,
 			y: 60,
-			centerOffset: {
+			offset: {
 				x: 73/2,
 				y: 0
 			},
@@ -633,7 +633,7 @@ function animateRino (layer, f) {
 			name: 'spear1',
 			x: 260,
 			y: 250,
-			centerOffset: {
+			offset: {
 				x: 55/2,
 				y: 0
 			},
@@ -730,7 +730,7 @@ function animateRino (layer, f) {
 		
 		$this.menuLayer = new Kinetic.Layer({
 			x: 200,
-			centerOffset: {
+			offset: {
                 x: 400 / 2,
                 y: 0
 			},
@@ -749,11 +749,11 @@ function animateRino (layer, f) {
 		
 		$this.menuLayer.add(CoverRope);
 	    
-        var GiantNut = new Kinetic.Image({
+        /*var GiantNut = new Kinetic.Image({
 			name: 'giantNut',
             x: 400,
             y: 0,
-            centerOffset: {
+            offset: {
                 x: 617 / 2,
                 y: 617 / 2
             },
@@ -762,13 +762,13 @@ function animateRino (layer, f) {
             height: 617
         });
         
-        $this.menuLayer.add(GiantNut);
+        $this.menuLayer.add(GiantNut);*/
         
         var TitlePlate = new Kinetic.Image({
 			name: 'titlePlate',
             x: 450,
             y: 100,
-            centerOffset: {
+            offset: {
                 x: 570 / 2,
                 y: 155 / 2
             },
@@ -1249,6 +1249,8 @@ function update () {
 	}
 	
 	$('.kineticjs-content').width($this.width * ratio).height($this.height * ratio);
+	$('#menu').width($this.width * ratio).height($this.height * ratio);
+	$('#menu').css('left', $('#container').width() / 2 - $this.width * ratio / 2);
 	
 	return false;
 	
@@ -1446,8 +1448,8 @@ function stagePlay (execute) {
 	
 	$this.stage.onFrame(function(frame) {
 		
-		if ($this.menu.close === false && $this.menu.animateHide === false && $this.menu.animateShow === false)
-			animateGiantNut($this.menuLayer, frame);
+		/*if ($this.menu.close === false && $this.menu.animateHide === false && $this.menu.animateShow === false)
+			animateGiantNut($this.menuLayer, frame);*/
 		
 		if ($this.rino.close === false)
 			animateRino($this.rinoLayer, frame);
@@ -1546,7 +1548,7 @@ function createSpider() {
 		dragConstraint: "vertical",
 		_hit: false, 
 		_log: false, 
-		centerOffset: {
+		offset: {
 			y: 960
 		}
 	});
